@@ -1,6 +1,6 @@
 {
   "name": "symbolicate-trace",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Symbolicate cpu_profiler samples from Electron apps.",
   "main": "index.js",
   "repository": {
