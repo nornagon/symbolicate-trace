@@ -1,0 +1,21 @@
+{
+  "name": "symbolicate-trace",
+  "version": "1.0.0",
+  "description": "Symbolicate cpu_profiler samples from Electron apps.",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nornagon/symbolicate-trace.git"
+  },
+  "keywords": [
+    "electron",
+    "symbolicate",
+    "symbols"
+  ],
+  "author": "Jeremy Rose <nornagon@nornagon.net>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/nornagon/symbolicate-trace/issues"
+  },
+  "homepage": "https://github.com/nornagon/symbolicate-trace#readme"
+}
