@@ -119,6 +119,11 @@ async function maybeSymbolicate(event) {
 }
 
 ;(async () => {
+  if (!process.argv[2] || !fs.statSync(process.argv[2]).isFile()) {
+    console.error(`Usage: symbolicate-trace <path/to/recording.trace>`)
+    console.error(`Output will be written to path/to/recording.trace.symbolicated.`)
+    process.exit(1)
+  }
   console.error('Reading trace...')
   const traceJson = fs.readFileSync(process.argv[2])
   console.error('Parsing trace...')
