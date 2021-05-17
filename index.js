@@ -1,7 +1,6 @@
 const fs = require('fs')
 const path = require('path')
 const breakpad = require('./breakpad')
-const ProgressBar = require('progress')
 
 const symbolFiles = new Map
 
@@ -126,17 +125,9 @@ async function maybeSymbolicate(event) {
   const trace = JSON.parse(traceJson)
   console.error('Symbolicating...')
 
-  const bar = new ProgressBar('Symbolicating... [:bar] :percent', { total: trace.traceEvents.length, width: 30 })
-  //const symbolicated = {...trace, traceEvents: await Promise.all(trace.traceEvents.map(j => maybeSymbolicate(j).then((x) => { bar.tick(); return x })))}
-  const newTraceEvents = []
-  for (const traceEvent of trace.traceEvents) {
-    const symbolicatedEvent = await maybeSymbolicate(traceEvent)
-    bar.tick()
-    newTraceEvents.push(symbolicatedEvent)
-  }
-  const symbolicated = {...trace, traceEvents: newTraceEvents}
+  const symbolicated = {...trace, traceEvents: await Promise.all(trace.traceEvents.map(maybeSymbolicate))}
 
-
-  console.error(`Writing symbolicated trace to '${process.argv[2] + '.symbolicated'}'...`)
-  fs.writeFileSync(process.argv[2] + '.symbolicated', JSON.stringify(symbolicated))
+  const outFile = process.argv[2] + '.symbolicated'
+  console.error(`Writing symbolicated trace to '${outFile}'...`)
+  fs.writeFileSync(outFile, JSON.stringify(symbolicated))
 })()

@@ -1,32 +1,7 @@
 const readline = require('readline')
-const { AvlTree } = require('@datastructures-js/binary-search-tree')
-const { RBTree } = require('bintrees')
-const AVLTree = require('avl')
 const GoogAvlTree = require('./goog-avl')
 
 const impl = {
-  rb: {
-    newTree: () => new RBTree((a, b) => a.address - b.address),
-    lb: (tree, k) => tree.lowerBound({address: k}).data(),
-    insert: (tree, v) => tree.insert(v)
-  },
-  dsjs: {
-    newTree: () => new AvlTree,
-    lb: (tree, k) => { const v = tree.lowerBound(k); return v ? v.getValue() : null },
-    insert: (tree, v) => tree.insert(v.address, v)
-  },
-  avl: {
-    newTree: () => new AVLTree((a, b) => b - a),
-    lb: (tree, k) => {
-      let node = null
-      tree.range(k, 0, (n) => {
-        node = n
-        return true
-      })
-      return node && node.data
-    },
-    insert: (tree, v) => tree.insert(v.address, v)
-  },
   goog: {
     newTree: () => new GoogAvlTree((a, b) => a.address - b.address),
     lb: (tree, k) => {
