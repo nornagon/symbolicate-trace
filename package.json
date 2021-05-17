@@ -1,8 +1,8 @@
 {
   "name": "symbolicate-trace",
-  "version": "1.0.1",
+  "bin": "./index.js",
+  "version": "1.0.3",
   "description": "Symbolicate cpu_profiler samples from Electron apps.",
-  "main": "index.js",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/nornagon/symbolicate-trace.git"
