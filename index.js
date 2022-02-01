@@ -78,7 +78,7 @@ async function getSymbolFile(moduleId, moduleName) {
 
 async function symbolicateFrame(frame) {
   // ref: https://source.chromium.org/chromium/chromium/src/+/main:third_party/perfetto/src/trace_processor/export_json.cc;l=1413-1420;drc=4e07ae3dd7097bf13b7fff93547d140ac2c8ca83
-  const m = /^0x([0-9a-f]+) - (\S+) \[([0-9A-F]+)\]$/.exec(frame)
+  const m = /^0x([0-9a-f]+) - (.+) \[([0-9A-F]+)\]$/.exec(frame)
   if (m) {
     const [, offsetHex, moduleName, moduleId] = m
     const offset = parseInt(offsetHex, 16)
