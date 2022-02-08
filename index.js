@@ -101,21 +101,32 @@ async function maybeSymbolicate(event) {
   }
 }
 
-;(async () => {
-  if (!process.argv[2] || !fs.statSync(process.argv[2]).isFile()) {
+async function symbolicate(traceJson) {
+  return {...trace, traceEvents: await Promise.all(trace.traceEvents.map(maybeSymbolicate))}
+}
+
+async function cli(argv) {
+  if (!argv[2] || !fs.statSync(argv[2]).isFile()) {
     console.error(`Usage: symbolicate-trace <path/to/recording.trace>`)
     console.error(`Output will be written to path/to/recording.trace.symbolicated.`)
     process.exit(1)
   }
+  const filename = argv[2]
   console.error('Reading trace...')
-  const traceJson = fs.readFileSync(process.argv[2])
+  const traceJson = fs.readFileSync(filename)
   console.error('Parsing trace...')
   const trace = JSON.parse(traceJson)
   console.error('Symbolicating...')
 
-  const symbolicated = {...trace, traceEvents: await Promise.all(trace.traceEvents.map(maybeSymbolicate))}
+  const symbolicated = await symbolicate(trace)
 
-  const outFile = process.argv[2] + '.symbolicated'
+  const outFile = filename + '.symbolicated'
   console.error(`Writing symbolicated trace to '${outFile}'...`)
   fs.writeFileSync(outFile, JSON.stringify(symbolicated))
-})()
+}
+
+module.exports = { symbolicate, cli }
+
+if (require.main === module) {
+  cli(process.argv)
+}
