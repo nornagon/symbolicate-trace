@@ -101,7 +101,7 @@ async function maybeSymbolicate(event) {
   }
 }
 
-async function symbolicate(traceJson) {
+async function symbolicate(trace) {
   return {...trace, traceEvents: await Promise.all(trace.traceEvents.map(maybeSymbolicate))}
 }
 
