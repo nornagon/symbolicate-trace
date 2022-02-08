@@ -72,11 +72,7 @@ async function symbolicateFrame(frame) {
       const line = symbols.lookup(offset)
       if (line) {
         return `${frame} ${line.func.name}` + (line.file ? ` (${line.file}:${line.line})` : '')
-      } else {
-        console.log(`could not find ${offset} in ${moduleName}`)
       }
-    } else {
-      console.log(`could not find symbol file for ${moduleName}`)
     }
   }
   return frame
