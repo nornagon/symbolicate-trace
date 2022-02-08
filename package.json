@@ -17,5 +17,10 @@
   "bugs": {
     "url": "https://github.com/nornagon/symbolicate-trace/issues"
   },
-  "homepage": "https://github.com/nornagon/symbolicate-trace#readme"
+  "homepage": "https://github.com/nornagon/symbolicate-trace#readme",
+  "dependencies": {
+    "got": "^11.8.2",
+    "mkdirp": "^1.0.4",
+    "parse-breakpad": "^0.1.0"
+  }
 }
