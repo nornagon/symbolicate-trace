@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 const fs = require('fs')
+const { rm, rename } = require('fs/promises')
 const path = require('path')
 const stream = require('stream')
 const { promisify } = require('util')
@@ -16,17 +17,22 @@ async function fetchSymbol(directory, baseUrl, pdb, id, symbolFileName) {
   const symbolPath = path.join(directory, pdb, id, symbolFileName)
   const pipeline = promisify(stream.pipeline)
 
-  // ensure path is created
-  await mkdirp(path.dirname(symbolPath))
-
-  // decompress the gzip
   try {
+    // Download to a temporary directory first.
     const str = got.stream(url, {
       decompress: true,
       followRedirect: true,
     })
-    // create symbol
-    await pipeline(str, fs.createWriteStream(symbolPath))
+    const tmpDir = path.join(directory, 'in_progress')
+    const tmpFileName = `${pdb}_${id}_${symbolFileName}.download`
+    await mkdirp(tmpDir)
+    await pipeline(str, fs.createWriteStream(path.join(tmpDir, tmpFileName)))
+
+    // If we were successful, move the symbol into place.
+    // This is so that a partially-successful download doesn't leave a corrupt
+    // symbol file in place to be read on subsequent runs.
+    await mkdirp(path.dirname(symbolPath))
+    await rename(path.join(tmpDir, tmpFileName), symbolPath)
   } catch (err) {
     if (err.message.startsWith('Response code 404')) {
       return false
@@ -49,12 +55,27 @@ async function getSymbolFile(moduleId, moduleName, opts) {
   const symbolFileName = pdb.replace(/(\.pdb)?$/, '.sym')
   const symbolPath = path.join(cacheDirectory, pdb, moduleId, symbolFileName)
   if (fs.existsSync(symbolPath) && !forceRefetch) {
-    return breakpad.parse(fs.createReadStream(symbolPath))
+    try {
+      return breakpad.parse(fs.createReadStream(symbolPath))
+    } catch (e) {
+      // If the parsing failed, remove the symbol path and try redownloading.
+      console.warn(`Failed to parse ${symbolPath}: ${e.stack}`)
+      console.warn('Flushing cache and attempting redownload.')
+      await rm(path.dirname(symbolPath), { recursive: true, force: true })
+    }
   }
   if (!fs.existsSync(symbolPath) && (!fs.existsSync(path.dirname(symbolPath)) || forceRefetch)) {
     for (const baseUrl of SYMBOL_BASE_URLS) {
-      if (await fetchSymbol(cacheDirectory, baseUrl, pdb, moduleId, symbolFileName))
-        return breakpad.parse(fs.createReadStream(symbolPath))
+      try {
+        if (await fetchSymbol(cacheDirectory, baseUrl, pdb, moduleId, symbolFileName))
+          return breakpad.parse(fs.createReadStream(symbolPath))
+      } catch (e) {
+        // This is a presumably transient error while fetching (or
+        // parsing—maybe the symbols were corrupted?), so remove the symbol
+        // directory to trigger a refetch next time we try.
+        await rm(path.dirname(symbolPath), { recursive: true, force: true })
+        throw e
+      }
     }
   }
 }
